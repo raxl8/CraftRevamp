@@ -19,6 +19,9 @@ project "CraftRevamp"
     language "C++"
     cppdialect "C++20"
 
+    pchheader "pch.h"
+    pchsource "src/pch.cpp"
+
     files { "src/**.h", "src/**.cpp" }
 
     submodules "uvw"

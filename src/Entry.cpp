@@ -1,6 +1,6 @@
-#include <assert.h>
+#include "pch.h"
+
 #include <uvw.hpp>
-#include <Windows.h>
 
 static void thread_cb(std::shared_ptr<void> arg) {
     printf("Hello World!\n");

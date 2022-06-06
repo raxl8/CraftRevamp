@@ -2,7 +2,7 @@ workspace "CraftRevamp"
     configurations { "Debug", "Release" }
     platforms "x64"
     targetdir "bin/%{cfg.buildcfg}"
-    objdir "obj/%{cfg.buildcfg}"
+    objdir "obj/%{cfg.buildcfg}/%{prj.name}"
 
     filter "configurations:Debug"
         defines "_DEBUG"

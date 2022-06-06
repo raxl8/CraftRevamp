@@ -20,3 +20,5 @@ project "CraftRevamp"
     cppdialect "C++20"
 
     files { "src/**.h", "src/**.cpp" }
+
+    submodules "uvw"

@@ -1,0 +1,6 @@
+[submodule "vendor/submodules/libuv"]
+	path = vendor/submodules/libuv
+	url = https://github.com/libuv/libuv
+[submodule "vendor/submodules/uvw"]
+	path = vendor/submodules/uvw
+	url = https://github.com/skypjack/uvw

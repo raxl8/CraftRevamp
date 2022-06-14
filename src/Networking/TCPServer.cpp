@@ -34,7 +34,7 @@ void TCPServer::Listen(const std::string& address, uint32_t port)
 	m_Handle->bind(address, m_Port);
 	m_Handle->listen();
 	m_Loop->run();
- }
+}
 
 void TCPServer::RemoveClient(TCPStream* client)
 {

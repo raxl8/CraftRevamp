@@ -1,17 +1,11 @@
 #include "pch.h"
 
-#include <uvw.hpp>
+#include "Networking/TCPServer.h"
 
-static void thread_cb(std::shared_ptr<void> arg) {
-    printf("Hello World!\n");
-}
-
-
-int main() {
-    auto loop = uvw::Loop::getDefault();
-    auto thread = loop->resource<uvw::Thread>(thread_cb);
-    thread->run();
-    thread->join();
-
+int main()
+{
+    auto server = new TCPServer;
+    server->Listen("127.0.0.1", 25565);
+    delete server;
     return 0;
 }

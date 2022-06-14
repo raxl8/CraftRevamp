@@ -22,6 +22,7 @@ project "CraftRevamp"
     pchheader "pch.h"
     pchsource "src/pch.cpp"
 
+    includedirs "src" -- fix intellisense not finding pch.h
     files { "src/**.h", "src/**.cpp" }
 
     submodules "uvw"

@@ -18,7 +18,7 @@ void TCPServer::Listen(const std::string& address, uint32_t port)
 
 	m_Handle->on<uvw::ListenEvent>([this](const uvw::ListenEvent& e, uvw::TCPHandle& serverHandle)
 		{
-			auto client = new TCPStream(this);
+			auto client = std::make_shared<TCPStream>(this);
 
 			std::shared_ptr<uvw::TCPHandle> clientHandle = m_Loop->resource<uvw::TCPHandle>();
 			serverHandle.accept(*clientHandle);
@@ -27,7 +27,7 @@ void TCPServer::Listen(const std::string& address, uint32_t port)
 
 			m_Clients.insert(client);
 
-			OnClientConnect(client);
+			OnClientCreated(client);
 		}
 	);
 
@@ -36,11 +36,7 @@ void TCPServer::Listen(const std::string& address, uint32_t port)
 	m_Loop->run();
 }
 
-void TCPServer::RemoveClient(TCPStream* client)
+void TCPServer::RemoveClient(const std::shared_ptr<TCPStream>& client)
 {
 	m_Clients.erase(client);
-
-	OnClientDisconnect(client);
-
-	delete client;
 }

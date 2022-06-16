@@ -9,21 +9,29 @@ TCPStream::TCPStream(TCPServer* server)
 {
 }
 
+TCPStream::~TCPStream()
+{
+	Stop();
+}
+
 void TCPStream::Start(std::shared_ptr<uvw::TCPHandle>&& handle)
 {
 	m_Handle = std::move(handle);
-	m_Handle->on<uvw::DataEvent>([this](const uvw::DataEvent& e, uvw::TCPHandle&)
+
+	// Keep a reference in scope 
+	auto thisRef = shared_from_this();
+	m_Handle->on<uvw::DataEvent>([thisRef](const uvw::DataEvent& e, uvw::TCPHandle&)
 		{
 			std::vector<uint8_t> data(e.length);
 			std::memcpy(&data[0], e.data.get(), e.length);
 
-			OnDataReceived(std::move(data), (size_t)e.length);
+			thisRef->OnDataReceived(std::move(data), (size_t)e.length);
 		}
 	);
 
-	m_Handle->on<uvw::EndEvent>([this](const uvw::EndEvent&, uvw::TCPHandle&)
+	m_Handle->on<uvw::EndEvent>([thisRef](const uvw::EndEvent&, uvw::TCPHandle&)
 		{
-			Stop();
+			thisRef->Stop();
 		}
 	);
 
@@ -62,7 +70,10 @@ void TCPStream::Stop()
 	m_Handle->shutdown();
 	m_Handle = {};
 
-	m_Server->RemoveClient(this);
+	auto thisRef = shared_from_this();
+	m_Server->RemoveClient(thisRef);
+
+	OnDisconnect();
 }
 
 void TCPStream::Write(std::unique_ptr<char>&& data, size_t size)

@@ -18,9 +18,9 @@ public:
 
 public:
 	Callback<TCPStream*> OnClientConnect;
+	Callback<TCPStream*> OnClientDisconnect;
 
 private:
-	uint32_t m_Port;
 	std::shared_ptr<uvw::Loop> m_Loop;
 	std::shared_ptr<uvw::TCPHandle> m_Handle;
 	std::set<TCPStream*> m_Clients;

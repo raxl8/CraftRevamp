@@ -21,12 +21,6 @@ void TCPStream::Start(std::shared_ptr<uvw::TCPHandle>&& handle)
 		}
 	);
 
-	m_Handle->on<uvw::CloseEvent>([this](const uvw::CloseEvent&, uvw::TCPHandle&)
-		{
-			Stop();
-		}
-	);
-
 	m_Handle->on<uvw::EndEvent>([this](const uvw::EndEvent&, uvw::TCPHandle&)
 		{
 			Stop();
@@ -39,8 +33,34 @@ void TCPStream::Start(std::shared_ptr<uvw::TCPHandle>&& handle)
 
 void TCPStream::Stop()
 {
+	auto handleRef = std::make_shared<decltype(m_Handle)>(m_Handle);
+	auto closeHandle = [handleRef]()
+	{
+		(*handleRef)->once<uvw::CloseEvent>([handleRef](const uvw::CloseEvent&, uvw::TCPHandle&)
+			{
+				*handleRef = {};
+			}
+		);
+
+		(*handleRef)->close();
+	};
+
+	m_Handle->once<uvw::ShutdownEvent>([closeHandle](const uvw::ShutdownEvent&, uvw::TCPHandle&)
+		{
+			closeHandle();
+		}
+	);
+
+	// We still need to close the handle if any error occurs
+	m_Handle->once<uvw::ErrorEvent>([closeHandle](const uvw::ErrorEvent&, uvw::TCPHandle&)
+		{
+			closeHandle();
+		}
+	);
+
 	m_Handle->stop();
 	m_Handle->shutdown();
+	m_Handle = {};
 
 	m_Server->RemoveClient(this);
 }

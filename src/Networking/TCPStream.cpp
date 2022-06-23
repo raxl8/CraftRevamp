@@ -5,7 +5,7 @@
 #include "Networking/TCPServer.h"
 
 TCPStream::TCPStream(TCPServer* server)
-	: m_Server(server)
+	: m_Server(server), m_Closing(false)
 {
 }
 
@@ -22,10 +22,13 @@ void TCPStream::Start(std::shared_ptr<uvw::TCPHandle>&& handle)
 	auto thisRef = shared_from_this();
 	m_Handle->on<uvw::DataEvent>([thisRef](const uvw::DataEvent& e, uvw::TCPHandle&)
 		{
+			if (thisRef->m_Closing)
+				return;
+
 			std::vector<uint8_t> data(e.length);
 			std::memcpy(&data[0], e.data.get(), e.length);
 
-			thisRef->OnDataReceived(std::move(data), (size_t)e.length);
+			thisRef->OnDataReceived(std::move(data));
 		}
 	);
 
@@ -41,6 +44,11 @@ void TCPStream::Start(std::shared_ptr<uvw::TCPHandle>&& handle)
 
 void TCPStream::Stop()
 {
+	if (m_Closing)
+		return;
+
+	m_Closing = true;
+
 	auto handleRef = std::make_shared<decltype(m_Handle)>(m_Handle);
 	auto closeHandle = [handleRef]()
 	{
@@ -71,13 +79,13 @@ void TCPStream::Stop()
 	m_Handle = {};
 
 	auto thisRef = shared_from_this();
-	m_Server->RemoveClient(thisRef);
+	m_Server->RemoveStream(thisRef);
 
 	OnDisconnect();
 }
 
-void TCPStream::Write(std::unique_ptr<char>&& data, size_t size)
+void TCPStream::Write(std::vector<uint8_t>&& data)
 {
 	// TODO: write timeout handling
-	m_Handle->write(data.get(), size);
+	m_Handle->write((char*)data.data(), (uint32_t)data.size());
 }

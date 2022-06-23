@@ -14,12 +14,13 @@ public:
 	void Start(std::shared_ptr<uvw::TCPHandle>&& handle);
 	void Stop();
 
-	void Write(std::unique_ptr<char>&& data, size_t size);
+	void Write(std::vector<uint8_t>&& data);
 
-	Callback<std::vector<uint8_t>, size_t> OnDataReceived;
+	Callback<std::vector<uint8_t>> OnDataReceived;
 	Callback<> OnDisconnect;
 
 private:
 	TCPServer* m_Server;
 	std::shared_ptr<uvw::TCPHandle> m_Handle;
+	bool m_Closing;
 };

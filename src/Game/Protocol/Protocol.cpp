@@ -3,11 +3,13 @@
 #include "Protocol.h"
 
 #include <fmt/printf.h>
+#include <cpr/cpr.h>
 
 #include <random>
 
 #include "Game/Player.h"
 #include "Game/Protocol/PacketID.h"
+#include "Crypto/SHA1.h"
 
 Protocol::Protocol(Player* player)
 	: m_Player(player), m_State(ConnectionState::Handshaking), m_Encrypted(false)
@@ -150,7 +152,20 @@ bool Protocol::EncryptionResponse(PacketStream& packet)
 	m_EncryptionStream->SetKeys(sharedSecret, sharedSecret);
 	m_Encrypted = true;
 
-	// TODO: Login Success
+	auto sha1 = SHA1();
+	// Server ID
+	// Shared Secret
+	sha1.Update(sharedSecret);
+	// Public Key
+	sha1.Update(m_Keypair->GetPublicKey());
+
+	auto res = cpr::Get(
+		cpr::Url{ "https://sessionserver.mojang.com/session/minecraft/hasJoined" },
+		cpr::Parameters{ {"username", m_Player->GetUsername()}, {"serverId", sha1.HexDigest()} },
+		cpr::VerifySsl{false});
+
+	printf("%d\n", res.status_code);
+	printf("%s\n", res.text.c_str());
 
 	return true;
 }

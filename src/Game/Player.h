@@ -13,7 +13,7 @@ public:
 	void SendData(std::vector<uint8_t>&& data);
 
 	inline void SetUsername(std::string&& username) { m_Username = std::move(username); }
-	inline std::string_view GetUsername() { return m_Username; }
+	inline const std::string& GetUsername() { return m_Username; }
 
 private:
 	GameServer* m_gameServer;

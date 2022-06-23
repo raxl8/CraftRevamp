@@ -12,8 +12,6 @@ public:
 	void Disconnect();
 	void SendData(std::vector<uint8_t>&& data);
 
-	inline std::weak_ptr<TCPStream> GetTCPStream() { return m_TCPStream; }
-
 	inline void SetUsername(std::string&& username) { m_Username = std::move(username); }
 	inline std::string_view GetUsername() { return m_Username; }
 

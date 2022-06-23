@@ -20,7 +20,9 @@ function submodules(list)
                 os.chdir(vendor_cwd .. "/submodules/" .. submodule.name)
 
                 submodule.include()
-                links(submodule.name)
+                if submodule.project then
+                    links(submodule.name)
+                end
 
                 os.chdir(old_cwd)
                 break
@@ -34,15 +36,17 @@ os.chdir("submodules") -- tidy up a bit generated files
 group "vendor"
 
 for _, submodule in pairs(submodules_list) do
-    project(submodule.name)
+    if submodule.project then
+        project(submodule.name)
 
-    local old_cwd = os.getcwd()
-    os.chdir(submodule.name)
-    
-    submodule.include()
-    submodule.project()
+        local old_cwd = os.getcwd()
+        os.chdir(submodule.name)
+        
+        submodule.include()
+        submodule.project()
 
-    os.chdir(old_cwd)
+        os.chdir(old_cwd)
+    end
 end
 
 group ""

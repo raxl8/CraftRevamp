@@ -4,3 +4,9 @@
 [submodule "vendor/submodules/uvw"]
 	path = vendor/submodules/uvw
 	url = https://github.com/skypjack/uvw
+[submodule "vendor/submodules/fmt"]
+	path = vendor/submodules/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "vendor/submodules/mbedtls"]
+	path = vendor/submodules/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls

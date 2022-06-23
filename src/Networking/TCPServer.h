@@ -14,13 +14,13 @@ public:
 	~TCPServer() = default;
 
 	void Listen(const std::string& address, uint32_t port);
-	void RemoveClient(const std::shared_ptr<TCPStream>& client);
+	void RemoveStream(const std::shared_ptr<TCPStream>& client);
 
 public:
-	Callback<std::shared_ptr<TCPStream>> OnClientCreated;
+	Callback<std::shared_ptr<TCPStream>> OnStreamCreated;
 
 private:
 	std::shared_ptr<uvw::Loop> m_Loop;
 	std::shared_ptr<uvw::TCPHandle> m_Handle;
-	std::set<std::shared_ptr<TCPStream>> m_Clients;
+	std::set<std::shared_ptr<TCPStream>> m_Streams;
 };

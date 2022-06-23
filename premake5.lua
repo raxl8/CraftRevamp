@@ -25,4 +25,4 @@ project "CraftRevamp"
     includedirs "src" -- fix intellisense not finding pch.h
     files { "src/**.h", "src/**.cpp" }
 
-    submodules { "uvw", "fmt", "mbedtls" }
+    submodules { "uvw", "fmt", "mbedtls", "curl", "cpr" }

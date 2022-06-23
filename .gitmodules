@@ -10,3 +10,12 @@
 [submodule "vendor/submodules/mbedtls"]
 	path = vendor/submodules/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls
+[submodule "vendor/submodules/nghttp2"]
+	path = vendor/submodules/nghttp2
+	url = https://github.com/nghttp2/nghttp2
+[submodule "vendor/submodules/curl"]
+	path = vendor/submodules/curl
+	url = https://github.com/curl/curl
+[submodule "vendor/submodules/cpr"]
+	path = vendor/submodules/cpr
+	url = https://github.com/libcpr/cpr

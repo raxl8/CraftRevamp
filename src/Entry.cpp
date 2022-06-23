@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#include "Networking/TCPServer.h"
+#include "Game/GameServer.h"
 
 int main()
 {
-	auto server = new TCPServer;
-	server->Listen("127.0.0.1", 25565);
+	auto server = new GameServer;
+	server->Start();
 	delete server;
 	return 0;
 }

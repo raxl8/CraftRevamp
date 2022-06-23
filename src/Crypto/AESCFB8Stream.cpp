@@ -7,6 +7,11 @@ AESCFB8Stream::AESCFB8Stream()
 	mbedtls_aes_init(&m_Context);
 }
 
+AESCFB8Stream::~AESCFB8Stream()
+{
+	mbedtls_aes_free(&m_Context);
+}
+
 void AESCFB8Stream::SetKeys(const std::vector<uint8_t>& key, const std::vector<uint8_t>& iv)
 {
 	m_Key = key;

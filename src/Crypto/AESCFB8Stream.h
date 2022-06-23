@@ -6,6 +6,7 @@ class AESCFB8Stream
 {
 public:
 	AESCFB8Stream();
+	~AESCFB8Stream();
 
 	void SetKeys(const std::vector<uint8_t>& key, const std::vector<uint8_t>& iv);
 

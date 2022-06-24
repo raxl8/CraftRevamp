@@ -14,7 +14,7 @@
 #include "Crypto/SHA1.h"
 
 Protocol::Protocol(Player* player)
-	: m_Player(player), m_State(ConnectionState::Handshaking), m_Encrypted(false)
+	: m_Player(player), m_State(ConnectionState::Handshake), m_Encrypting(false)
 {
 	m_Keypair = std::make_unique<RSAKeypair>(1024);
 	
@@ -35,7 +35,7 @@ Protocol::Protocol(Player* player)
 
 void Protocol::HandlePacket(std::vector<uint8_t> data)
 {
-	if (m_Encrypted && m_EncryptionStream)
+	if (m_Encrypting && m_EncryptionStream)
 	{
 		data = m_EncryptionStream->Decrypt(data);
 	}
@@ -50,12 +50,12 @@ void Protocol::HandlePacket(std::vector<uint8_t> data)
 		auto packetId = packet.ReadVar<int>();
 		if (packetId == PacketID::Handshake)
 		{
-			if (m_State == ConnectionState::Handshaking)
+			if (m_State == ConnectionState::Handshake)
 			{
 				if (!Handshake(packet))
 					return;
 			}
-			else if (m_State == ConnectionState::LoggingIn)
+			else if (m_State == ConnectionState::Login)
 			{
 				if (!LoginStart(packet))
 					return;
@@ -71,8 +71,7 @@ void Protocol::HandlePacket(std::vector<uint8_t> data)
 
 void Protocol::SendPacket(PacketStream&& packet)
 {
-	auto buffer = packet.AsBuffer();
-	if (m_Encrypted && m_EncryptionStream)
+	if (m_Encrypting && m_EncryptionStream)
 	{
 		buffer = m_EncryptionStream->Encrypt(buffer);
 	}
@@ -111,7 +110,7 @@ bool Protocol::Handshake(PacketStream& packet)
 	// TODO: handle status state
 	if (nextState == 2) // Login
 	{
-		m_State = ConnectionState::LoggingIn;
+		m_State = ConnectionState::Login;
 	}
 
 	return true;
@@ -152,7 +151,7 @@ bool Protocol::EncryptionResponse(PacketStream& packet)
 
 	auto sharedSecret = m_Keypair->Decrypt(sharedSecretEncrypted);
 	m_EncryptionStream = std::make_unique<AESCFB8Stream>(sharedSecret, sharedSecret);
-	m_Encrypted = true;
+	m_Encrypting = true;
 
 	auto sha1 = SHA1();
 	// Server ID

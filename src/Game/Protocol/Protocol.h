@@ -9,8 +9,8 @@ class Protocol
 {
 	enum class ConnectionState
 	{
-		Handshaking = 0,
-		LoggingIn,
+		Handshake = 0,
+		Login,
 		Play,
 	};
 
@@ -27,8 +27,10 @@ public:
 private:
 	Player* m_Player;
 	ConnectionState m_State;
+
 	std::unique_ptr<RSAKeypair> m_Keypair;
 	std::vector<uint8_t> m_VerifyToken;
-	bool m_Encrypted;
+
+	bool m_Encrypting;
 	std::unique_ptr<AESCFB8Stream> m_EncryptionStream;
 };

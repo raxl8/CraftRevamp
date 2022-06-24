@@ -86,7 +86,7 @@ void Protocol::Kick(std::string reason /*= ""*/)
 	{
 		PacketStream packet;
 		packet.WriteVar<int>(PacketID::Disconnect);
-		packet.WriteString(fmt::sprintf("{\"text\":\"%s\"}", reason));
+		packet.WriteString(fmt::sprintf("{\"text\":\"Server Error: %s\",\"color\":\"red\"}", reason));
 		SendPacket(std::move(packet));
 	}
 
@@ -151,8 +151,7 @@ bool Protocol::EncryptionResponse(PacketStream& packet)
 	}
 
 	auto sharedSecret = m_Keypair->Decrypt(sharedSecretEncrypted);
-	m_EncryptionStream = std::make_unique<AESCFB8Stream>();
-	m_EncryptionStream->SetKeys(sharedSecret, sharedSecret);
+	m_EncryptionStream = std::make_unique<AESCFB8Stream>(sharedSecret, sharedSecret);
 	m_Encrypted = true;
 
 	auto sha1 = SHA1();

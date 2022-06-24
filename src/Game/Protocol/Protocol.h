@@ -11,6 +11,7 @@ class Protocol
 	{
 		Handshaking = 0,
 		LoggingIn,
+		Play,
 	};
 
 public:

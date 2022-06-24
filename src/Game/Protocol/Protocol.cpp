@@ -5,6 +5,8 @@
 #include <fmt/printf.h>
 #include <cpr/cpr.h>
 
+#include <nlohmann/json.hpp>
+
 #include <random>
 
 #include "Game/Player.h"
@@ -106,6 +108,7 @@ bool Protocol::Handshake(PacketStream& packet)
 	packet.Read<uint16_t>();
 
 	auto nextState = packet.ReadVar<int>();
+	// TODO: handle status state
 	if (nextState == 2) // Login
 	{
 		m_State = ConnectionState::LoggingIn;
@@ -164,8 +167,40 @@ bool Protocol::EncryptionResponse(PacketStream& packet)
 		cpr::Parameters{ {"username", m_Player->GetUsername()}, {"serverId", sha1.HexDigest()} },
 		cpr::VerifySsl{false});
 
-	printf("%d\n", res.status_code);
-	printf("%s\n", res.text.c_str());
+	if (res.status_code != 200)
+	{
+		Kick(fmt::sprintf("Session server returned code %d", res.status_code));
+		return false;
+	}
+
+	nlohmann::json j = nlohmann::json::parse(res.text);
+	auto uuidNode = j["id"];
+	auto nameNode = j["name"];
+	if (!uuidNode.is_string() || !nameNode.is_string())
+	{
+		Kick("Invalid JSON returned by Session server");
+		return false;
+	}
+
+	auto uuidStr = uuidNode.get<std::string>();
+	auto uuid = UUID(std::move(uuidStr));
+	auto uuidWithHyphens = uuid.WithHyphens();
+	m_Player->SetUUID(std::move(uuid));
+
+	// Copy old username, it is needed for the Login Success packet
+	std::string username = m_Player->GetUsername();
+	
+	// Use new username given by Session server
+	auto name = nameNode.get<std::string>();
+	m_Player->SetUsername(std::move(name));
+
+	PacketStream loginSuccess;
+	loginSuccess.WriteVar<int>(LoginSuccess);
+	loginSuccess.WriteString(uuidWithHyphens);
+	loginSuccess.WriteString(username);
+	SendPacket(std::move(loginSuccess));
+
+	m_State = ConnectionState::Play;
 
 	return true;
 }

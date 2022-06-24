@@ -71,6 +71,12 @@ void Protocol::HandlePacket(std::vector<uint8_t> data)
 
 void Protocol::SendPacket(PacketStream&& packet)
 {
+	PacketStream tempStream;
+	auto data = packet.GetData();
+	tempStream.WriteVar((int)data.size());
+	tempStream.WriteBytes(data);
+
+	std::vector<uint8_t> buffer = tempStream.GetData();
 	if (m_Encrypting && m_EncryptionStream)
 	{
 		buffer = m_EncryptionStream->Encrypt(buffer);
@@ -183,6 +189,7 @@ bool Protocol::EncryptionResponse(PacketStream& packet)
 	auto uuidStr = uuidNode.get<std::string>();
 	auto uuid = UUID(std::move(uuidStr));
 	auto uuidWithHyphens = uuid.WithHyphens();
+	fmt::printf("uuid -> %s\n", uuidWithHyphens);
 	m_Player->SetUUID(std::move(uuid));
 
 	// Copy old username, it is needed for the Login Success packet

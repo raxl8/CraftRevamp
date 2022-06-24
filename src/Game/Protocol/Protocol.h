@@ -3,6 +3,7 @@
 #include "Game/Protocol/PacketStream.h"
 #include "Crypto/RSAKeypair.h"
 #include "Crypto/AESCFB8Stream.h"
+#include "Compression/ZLibStream.h"
 
 class Player;
 class Protocol
@@ -33,4 +34,7 @@ private:
 
 	bool m_Encrypting;
 	std::unique_ptr<AESCFB8Stream> m_EncryptionStream;
+
+	bool m_Compressing;
+	std::unique_ptr<ZLibStream> m_CompressionStream;
 };

@@ -14,7 +14,7 @@
 #include "Crypto/SHA1.h"
 
 Protocol::Protocol(Player* player)
-	: m_Player(player), m_State(ConnectionState::Handshake), m_Encrypting(false)
+	: m_Player(player), m_State(ConnectionState::Handshake), m_Encrypting(false), m_Compressing(false)
 {
 	m_Keypair = std::make_unique<RSAKeypair>(1024);
 	
@@ -71,6 +71,23 @@ void Protocol::HandlePacket(std::vector<uint8_t> data)
 
 void Protocol::SendPacket(PacketStream&& packet)
 {
+	PacketStream tempStream;
+	auto data = packet.GetData();
+	if (m_Compressing && m_CompressionStream)
+	{
+		auto compressedData = m_CompressionStream->Compress(data);
+		auto dataLengthBytes = tempStream.GetEncodedVar((int)data.size());
+		tempStream.WriteVar((int)dataLengthBytes.size() + (int)compressedData.size());
+		tempStream.WriteBytes(dataLengthBytes);
+		tempStream.WriteBytes(compressedData);
+	}
+	else
+	{
+		tempStream.WriteVar<int>((int)data.size());
+		tempStream.WriteBytes(data);
+	}	
+
+	std::vector<uint8_t> buffer = tempStream.GetData();
 	if (m_Encrypting && m_EncryptionStream)
 	{
 		buffer = m_EncryptionStream->Encrypt(buffer);
@@ -191,6 +208,15 @@ bool Protocol::EncryptionResponse(PacketStream& packet)
 	// Use new username given by Session server
 	auto name = nameNode.get<std::string>();
 	m_Player->SetUsername(std::move(name));
+
+	PacketStream setCompression;
+	setCompression.WriteVar<int>(SetCompression);
+	// TODO: use config
+	setCompression.WriteVar<int>(0);
+	SendPacket(std::move(setCompression));
+
+	m_Compressing = true;
+	m_CompressionStream = std::make_unique<ZLibStream>();
 
 	PacketStream loginSuccess;
 	loginSuccess.WriteVar<int>(LoginSuccess);

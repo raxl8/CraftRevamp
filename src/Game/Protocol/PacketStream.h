@@ -24,6 +24,7 @@ public:
 	{
 	}
 
+	inline const std::vector<uint8_t>& GetData() { return m_Data; }
 	inline uint64_t GetCursor() { return m_Cursor; }
 
 	template<typename T>
@@ -89,14 +90,6 @@ public:
 		return value;
 	}
 
-	void EnsureWriteableSize(size_t size)
-	{
-		if (m_Cursor + size > m_Data.size())
-		{
-			m_Data.resize(m_Cursor + size);
-		}
-	}
-
 	template<typename T>
 	void Write(const T& value, uint64_t offset = 0)
 	{
@@ -117,6 +110,25 @@ public:
 		EnsureWriteableSize(data.size());
 		std::memcpy(&m_Data[m_Cursor], &data[0], data.size());
 		m_Cursor += data.size();
+	}
+
+	template<VarType T>
+	std::vector<uint8_t> GetEncodedVar(T value)
+	{
+		std::vector<uint8_t> bytes;
+		while (true)
+		{
+			if ((value & ~SEGMENT_BITS) == 0)
+			{
+				bytes.push_back(value);
+				break;
+			}
+
+			bytes.push_back((value & SEGMENT_BITS) | CONTINUE_BIT);
+			value >>= 7;
+		}
+
+		return bytes;
 	}
 
 	template<VarType T>
@@ -157,32 +169,13 @@ public:
 		}
 	}
 
-	std::vector<uint8_t> AsBuffer()
-	{
-		PacketStream tempStream;
-		tempStream.WriteVar<int>((int)m_Data.size());
-		tempStream.WriteBytes(m_Data);
-		return tempStream.m_Data;
-	}
-
 private:
-	template<VarType T>
-	std::vector<uint8_t> GetEncodedVar(T value)
+	void EnsureWriteableSize(size_t size)
 	{
-		std::vector<uint8_t> bytes;
-		while (true)
+		if (m_Cursor + size > m_Data.size())
 		{
-			if ((value & ~SEGMENT_BITS) == 0)
-			{
-				bytes.push_back(value);
-				break;
-			}
-
-			bytes.push_back((value & SEGMENT_BITS) | CONTINUE_BIT);
-			value >>= 7;
+			m_Data.resize(m_Cursor + size);
 		}
-
-		return bytes;
 	}
 
 private:

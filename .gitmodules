@@ -22,3 +22,6 @@
 [submodule "vendor/submodules/json"]
 	path = vendor/submodules/json
 	url = https://github.com/nlohmann/json
+[submodule "vendor/submodules/zlib"]
+	path = vendor/submodules/zlib
+	url = https://github.com/madler/zlib
